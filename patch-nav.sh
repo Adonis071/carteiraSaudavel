@@ -1,0 +1,1 @@
+sed -i 's/import React, { useState, useEffect } from '\''react'\'';/import React, { useState, useEffect } from '\''react'\'';\nimport { useNavigate } from '\''react-router-dom'\'';/g' src/components/Transactions.tsx

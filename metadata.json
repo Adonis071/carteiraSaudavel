@@ -1,0 +1,6 @@
+{
+  "name": "Carteira Saudável",
+  "description": "Dashboard financeiro inteligente com integração bancária, gráficos interativos e inteligência artificial para insights de orçamento.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

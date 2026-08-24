@@ -1,0 +1,18 @@
+--- src/components/Transactions.tsx
++++ src/components/Transactions.tsx
+@@ -55,10 +55,14 @@
+     } else {
+       try {
++        const controller = new AbortController();
++        const timeoutId = setTimeout(() => controller.abort(), 5000);
++
+         // Use Gemini to classify the transaction
+         const aiRes = await fetch('/api/ai/classify', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+-          body: JSON.stringify({ transactionName: name, amount: parseFloat(amount) })
++          body: JSON.stringify({ transactionName: name, amount: parseFloat(amount) }),
++          signal: controller.signal
+         });
++        clearTimeout(timeoutId);
+         const aiData = await aiRes.json();
