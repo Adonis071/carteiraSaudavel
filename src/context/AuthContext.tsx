@@ -17,6 +17,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("🔥 [DIAGNÓSTICO] UID do usuário atual:", user.uid);
+      } else {
+        console.log("🔥 [DIAGNÓSTICO] Nenhum usuário logado.");
+      }
       setCurrentUser(user);
       setLoading(false);
     });
