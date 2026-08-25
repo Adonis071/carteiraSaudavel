@@ -1,88 +1,34 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/components/Transactions.tsx', 'utf8');
 
-const regex = /const handleAddTransaction = async \(e: React\.FormEvent\) => \{[\s\S]*?\n  \};\n\n  const deleteTransaction = async/m;
+const txFile = 'src/components/Transactions.tsx';
+let txCode = fs.readFileSync(txFile, 'utf8');
 
-const newFunc = `const handleAddTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser || !amount || !name) return;
+// Fix button disabled state
+txCode = txCode.replace(
+  /disabled=\{isClassifying\}/g,
+  'disabled={isSaving}'
+);
 
-    // Fix comma replacing and NaN issues
-    const normalizedAmount = amount.replace(',', '.');
-    let txAmount = parseFloat(normalizedAmount);
-    if (isNaN(txAmount)) txAmount = 0;
+txCode = txCode.replace(
+  /isClassifying \?/g,
+  'isSaving ?'
+);
 
-    const txName = name;
-    const txType = type;
-    const txDate = date;
-    const txSelCat = selectedCategory;
-    const txCustCat = customCategory;
+// Fix table column for date/time
+const oldDateColumn = `<td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                      {safeFormatDate(t.date, "dd 'de' MMM, yyyy")}
+                    </td>`;
 
-    // Start loading state
-    setIsClassifying(true);
-    
-    let category = 'Outros';
-    let aiSuccess = false;
+const newDateColumn = `<td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-zinc-900 dark:text-zinc-100">{safeFormatDate(t.date, "dd 'de' MMM, yyyy")}</div>
+                      {t.createdAt?.toDate && (
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          {format(t.createdAt.toDate(), "HH:mm")}
+                        </div>
+                      )}
+                    </td>`;
 
-    try {
-      if (txSelCat === 'Outro') {
-        category = txCustCat || 'Outros';
-      } else if (txSelCat !== 'Auto (IA)') {
-        category = txSelCat;
-      } else {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
+txCode = txCode.replace(oldDateColumn, newDateColumn);
 
-          const aiRes = await fetch('/api/ai/classify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transactionName: txName, amount: txAmount }),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-          
-          if (aiRes.ok) {
-             const aiData = await aiRes.json();
-             if (aiData.category) {
-               category = aiData.category;
-               aiSuccess = true;
-             }
-          }
-        } catch (error) {
-          console.error("AI Classification error", error);
-          category = 'Outros';
-        }
-      }
-
-      await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), {
-        userId: currentUser.uid,
-        amount: txAmount,
-        name: txName,
-        type: txType,
-        date: txDate,
-        category: category,
-        createdAt: serverTimestamp(),
-        source: 'manual'
-      });
-      
-      // Clear form only on success
-      setIsAdding(false);
-      setAmount('');
-      setName('');
-      setSelectedCategory('Auto (IA)');
-      setCustomCategory('');
-      
-    } catch (error) {
-      console.error("Error adding doc", error);
-      alert("Houve um erro ao salvar a transação. Verifique sua conexão.");
-    } finally {
-      setIsClassifying(false);
-    }
-  };
-
-  const deleteTransaction = async`;
-
-code = code.replace(regex, newFunc);
-fs.writeFileSync('src/components/Transactions.tsx', code);
-console.log('Patched handleAddTransaction back to standard async with NaN fix');
+fs.writeFileSync(txFile, txCode);
+console.log("Patched Transactions.tsx");

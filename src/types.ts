@@ -16,6 +16,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   source: 'manual' | 'plaid';
   plaidTransactionId?: string;
+  createdAt?: any;
 }
 
 export type Theme = 'dark' | 'light' | 'system';

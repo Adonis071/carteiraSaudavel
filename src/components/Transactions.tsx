@@ -281,11 +281,11 @@ export default function Transactions() {
             <div className="md:col-span-2 pt-2">
               <button
                 type="submit"
-                disabled={isClassifying}
+                disabled={isSaving}
                 className="w-full flex justify-center items-center h-11 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-75"
               >
-                {isClassifying ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-                {isClassifying ? (selectedCategory === 'Auto (IA)' ? 'Classificando com AI...' : 'Salvando...') : 'Salvar Transação'}
+                {isSaving ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
+                {isSaving ? (selectedCategory === 'Auto (IA)' ? 'Classificando com AI...' : 'Salvando...') : 'Salvar Transação'}
               </button>
             </div>
           </form>
@@ -333,8 +333,13 @@ export default function Transactions() {
                         {t.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
-                      {safeFormatDate(t.date, "dd 'de' MMM, yyyy")}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-zinc-900 dark:text-zinc-100">{safeFormatDate(t.date, "dd 'de' MMM, yyyy")}</div>
+                      {t.createdAt?.toDate && (
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          {format(t.createdAt.toDate(), "HH:mm")}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
                       <span className={t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-zinc-900 dark:text-white'}>
