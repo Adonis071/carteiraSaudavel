@@ -159,9 +159,35 @@ export default function Dashboard() {
       head: [['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor']],
       body: tableData,
       theme: 'striped',
-      headStyles: { fillColor: [37, 99, 235] }, // violet-600
+      headStyles: { fillColor: [124, 58, 237] }, // violet-600
       styles: { fontSize: 10, cellPadding: 4 },
     });
+
+    if (insights) {
+      const finalY = (doc as any).lastAutoTable?.finalY || 100;
+      
+      // Check if we need a new page
+      if (finalY > 250) {
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(15, 23, 42);
+        doc.text('Análise da Inteligência Artificial', 14, 20);
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        const cleanInsights = insights.replace(/\*/g, '').replace(/#/g, '');
+        const splitText = doc.splitTextToSize(cleanInsights, 180);
+        doc.text(splitText, 14, 30);
+      } else {
+        doc.setFontSize(14);
+        doc.setTextColor(15, 23, 42);
+        doc.text('Análise da Inteligência Artificial', 14, finalY + 15);
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        const cleanInsights = insights.replace(/\*/g, '').replace(/#/g, '');
+        const splitText = doc.splitTextToSize(cleanInsights, 180);
+        doc.text(splitText, 14, finalY + 25);
+      }
+    }
     
     doc.save(`Relatorio_Financeiro_${format(new Date(), 'MMM_yyyy')}.pdf`);
   };
@@ -203,14 +229,16 @@ export default function Dashboard() {
             Acompanhe seu patrimônio e gastos
           </p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button onClick={() => navigate("/transactions", { state: { openForm: true } })} className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium shadow-sm"><Plus className="w-4 h-4 mr-2" />Nova Transação</button>
-          <BankSync className="flex-1 sm:flex-none" />
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <button onClick={() => navigate("/transactions", { state: { openForm: true } })} className="flex-1 sm:flex-none flex items-center justify-center px-2 py-2 sm:px-4 sm:py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-xs sm:text-sm font-medium shadow-sm whitespace-nowrap"><Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />Nova Transação</button>
+          <div className="flex-1 sm:flex-none flex min-w-0">
+            <BankSync className="w-full text-xs sm:text-sm px-2 py-2 sm:px-4 sm:py-2 whitespace-nowrap" />
+          </div>
           <button
             onClick={exportPDF}
-            className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center px-2 py-2 sm:px-4 sm:py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-xs sm:text-sm font-medium shadow-sm whitespace-nowrap"
           >
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             Exportar PDF
           </button>
         </div>
@@ -279,11 +307,11 @@ export default function Dashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Chart Section */}
         <div className="lg:col-span-2 bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-700/50 flex flex-col min-w-0 overflow-hidden">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Fluxo de Caixa</h3>
-          <div className="flex-1 min-h-[300px]">
+          <div className="w-full h-[300px] sm:h-[350px]">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

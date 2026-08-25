@@ -63,7 +63,7 @@ app.post('/api/ai/insights', async (req, res) => {
     const prompt = `Act as an expert financial advisor. Here is a list of my recent transactions (JSON format):
 ${JSON.stringify(transactions)}
 
-Provide 3 personalized, actionable insights about my spending habits and budget in Portuguese (Brazil). Keep them concise and professional.`;
+Forneça 3 insights diretos e curtos sobre meus hábitos de consumo e orçamento em Português (Brasil). Seja extremamente conciso, máximo de 1 frase curta por insight.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.6-flash',
