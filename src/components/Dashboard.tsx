@@ -246,7 +246,7 @@ export default function Dashboard() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Chart Section */}
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-700/50 flex flex-col">
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-700/50 flex flex-col min-w-0 overflow-hidden">
           <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-6">Fluxo de Caixa</h3>
           <div className="flex-1 min-h-[300px]">
             {chartData.length > 0 ? (

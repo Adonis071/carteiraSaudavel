@@ -68,18 +68,12 @@ export default function Transactions() {
     const txSelCat = selectedCategory;
     const txCustCat = customCategory;
 
-    // Optimistically close modal/reset form IMMEDIATELY
-    setIsAdding(false);
-    setAmount('');
-    setName('');
-    setSelectedCategory('Auto (IA)');
-    setCustomCategory('');
+    // Show loading state and prevent form close until done
+    setIsClassifying(true);
     
-    // Background task to save and classify
-    (async () => {
-      setIsClassifying(true);
-      let category = 'Outros';
+    let category = 'Outros';
 
+    try {
       if (txSelCat === 'Outro') {
         category = txCustCat || 'Outros';
       } else if (txSelCat !== 'Auto (IA)') {
@@ -103,27 +97,33 @@ export default function Transactions() {
             category = aiData.category;
           }
         } catch (error) {
-          console.error("Classification failed", error);
+          console.error("AI Classification error", error);
+          // Fallback if AI fails or times out
+          category = 'Outros';
         }
       }
 
-      try {
-        await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), {
-          userId: currentUser.uid,
-          amount: txAmount,
-          name: txName,
-          type: txType,
-          date: new Date(txDate).toISOString(),
-          category,
-          source: 'manual',
-          createdAt: serverTimestamp()
-        });
-      } catch (error) {
-        console.error("Error adding doc", error);
-      } finally {
-        setIsClassifying(false);
-      }
-    })();
+      await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), {
+        userId: currentUser.uid,
+        amount: txAmount,
+        name: txName,
+        type: txType,
+        date: txDate,
+        category: category,
+        createdAt: serverTimestamp(),
+        source: 'manual'
+      });
+      
+    } catch (error) {
+      console.error("Error adding doc", error);
+    } finally {
+      setIsClassifying(false);
+      setIsAdding(false);
+      setAmount('');
+      setName('');
+      setSelectedCategory('Auto (IA)');
+      setCustomCategory('');
+    }
   };
 
   const deleteTransaction = async (id: string) => {
