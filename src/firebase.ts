@@ -1,7 +1,15 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDjNDuhbiB3Xtb_hsNNyzXwksfEJX3oSQQ",
+  authDomain: "carteirasaudavel-17e4b.firebaseapp.com",
+  projectId: "carteirasaudavel-17e4b",
+  storageBucket: "carteirasaudavel-17e4b.firebasestorage.app",
+  messagingSenderId: "913957967804",
+  appId: "1:913957967804:web:63714d4a4464b759b6bdb9"
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -11,4 +19,4 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize Firestore
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app);

@@ -26,11 +26,12 @@ export default function BankSync({ className }: BankSyncProps) {
           body: JSON.stringify({ userId: currentUser.uid })
         });
         const data = await response.json();
+        
         if (data.link_token) {
           setLinkToken(data.link_token);
         } else if (data.error) {
           console.error("Plaid API Error:", data.error);
-          alert("Erro na API do Plaid: " + (data.error.error_message || JSON.stringify(data.error)));
+          alert("Erro na API do Plaid (verifique suas chaves no Render): " + (data.error.error_message || JSON.stringify(data.error)));
         }
       } catch (err) {
         console.error("Error generating Plaid link token", err);

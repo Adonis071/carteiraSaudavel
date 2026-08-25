@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AnimatePresence, motion } from 'motion/react';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import Transactions from './components/Transactions';
@@ -62,6 +63,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { currentUser, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -71,12 +73,45 @@ function AppRoutes() {
     );
   }
 
+  const pageTransition = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -15 },
+    transition: { duration: 0.3, ease: 'easeInOut' }
+  };
+
+  if (!currentUser) {
+    return (
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="*" element={
+            <motion.div {...pageTransition}>
+              <Auth />
+            </motion.div>
+          } />
+        </Routes>
+      </AnimatePresence>
+    );
+  }
+
   return (
-    <Routes>
-      <Route path="/login" element={currentUser ? <Navigate to="/" replace /> : <Auth />} />
-      <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
-      <Route path="/transactions" element={<ProtectedRoute><AppLayout><Transactions /></AppLayout></ProtectedRoute>} />
-    </Routes>
+    <AppLayout>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={
+            <motion.div {...pageTransition} className="w-full">
+              <Dashboard />
+            </motion.div>
+          } />
+          <Route path="/transactions" element={
+            <motion.div {...pageTransition} className="w-full">
+              <Transactions />
+            </motion.div>
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </AppLayout>
   );
 }
 
