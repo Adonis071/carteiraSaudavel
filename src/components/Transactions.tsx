@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
@@ -9,11 +9,24 @@ import { ptBR } from 'date-fns/locale';
 import { Plus, Trash2, Tag, Landmark, Wallet, RefreshCw, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+const safeFormatDate = (dateStr: any, fmt: string) => {
+  try {
+    if (!dateStr) return 'Data Inválida';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Data Inválida';
+    return format(d, fmt, { locale: ptBR });
+  } catch (e) {
+    return 'Data Inválida';
+  }
+};
+
+
 export default function Transactions() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isAdding, setIsAdding] = useState(false);
+  const location = useLocation();
+  const [isAdding, setIsAdding] = useState(location.state?.openForm || false);
   
   // Form State
   const [amount, setAmount] = useState('');
@@ -302,7 +315,7 @@ export default function Transactions() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
-                      {format(new Date(t.date), "dd 'de' MMM, yyyy", { locale: ptBR })}
+                      {safeFormatDate(t.date, "dd 'de' MMM, yyyy")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
                       <span className={t.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-zinc-900 dark:text-white'}>

@@ -82,7 +82,7 @@ function AppRoutes() {
 
   if (!currentUser) {
     return (
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <Routes location={location} key={location.pathname}>
           <Route path="*" element={
             <motion.div {...pageTransition}>
@@ -96,7 +96,7 @@ function AppRoutes() {
 
   return (
     <AppLayout>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={
             <motion.div {...pageTransition} className="w-full">

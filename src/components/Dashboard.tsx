@@ -11,6 +11,18 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { cn } from '../lib/utils';
 
+const safeFormatDate = (dateStr: any, fmt: string) => {
+  try {
+    if (!dateStr) return 'Data Inválida';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return 'Data Inválida';
+    return format(d, fmt, { locale: ptBR });
+  } catch (e) {
+    return 'Data Inválida';
+  }
+};
+
+
 // Helper function to format currency
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('pt-BR', {
@@ -96,7 +108,7 @@ export default function Dashboard() {
     
     // Table
     const tableData = transactions.map(t => [
-      format(new Date(t.date), 'dd/MM/yyyy'),
+      safeFormatDate(t.date, "dd/MM/yyyy"),
       t.name,
       t.category,
       t.type === 'income' ? 'Receita' : 'Despesa',
@@ -122,7 +134,7 @@ export default function Dashboard() {
 
   // Chart Data Preparation (Grouping by Date)
   const chartData = [...transactions].reverse().reduce((acc: any[], t) => {
-    const dateStr = format(new Date(t.date), 'dd MMM', { locale: ptBR });
+    const dateStr = safeFormatDate(t.date, "dd MMM");
     const existingDate = acc.find(item => item.date === dateStr);
     
     if (existingDate) {
@@ -153,7 +165,7 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button onClick={() => navigate("/transactions")} className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium shadow-sm"><Plus className="w-4 h-4 mr-2" />Nova Transação</button>
+          <button onClick={() => navigate("/transactions", { state: { openForm: true } })} className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium shadow-sm"><Plus className="w-4 h-4 mr-2" />Nova Transação</button>
           <BankSync className="flex-1 sm:flex-none" />
           <button
             onClick={exportPDF}

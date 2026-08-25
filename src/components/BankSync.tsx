@@ -31,7 +31,6 @@ export default function BankSync({ className }: BankSyncProps) {
           setLinkToken(data.link_token);
         } else if (data.error) {
           console.error("Plaid API Error:", data.error);
-          alert("Erro na API do Plaid (verifique suas chaves no Render): " + (data.error.error_message || JSON.stringify(data.error)));
         }
       } catch (err) {
         console.error("Error generating Plaid link token", err);
@@ -77,7 +76,7 @@ export default function BankSync({ className }: BankSyncProps) {
   }, [currentUser]);
 
   const config: Parameters<typeof usePlaidLink>[0] = {
-    token: linkToken!,
+    token: linkToken || '',
     onSuccess,
   };
 
