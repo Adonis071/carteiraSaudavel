@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, browserSessionPersistence, inMemoryPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -18,5 +18,15 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
+// Garante persistência de sessão mesmo em ambientes com storage restrito
+// (ex: iframe de preview do AI Studio). Tenta localStorage -> sessionStorage -> memória.
+setPersistence(auth, browserLocalPersistence).catch(() => {
+  console.warn('browserLocalPersistence indisponível, tentando sessionStorage...');
+  setPersistence(auth, browserSessionPersistence).catch(() => {
+    console.warn('browserSessionPersistence indisponível, usando memória (sessão não sobrevive a refresh).');
+    setPersistence(auth, inMemoryPersistence);
+  });
+});
+
 // Initialize Firestore
-export const db = firebaseConfig.firestoreDatabaseId ? getFirestore(app, firebaseConfig.firestoreDatabaseId) : getFirestore(app);
+export const db = getFirestore(app);
