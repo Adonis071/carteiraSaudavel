@@ -57,7 +57,7 @@ export default function Auth() {
         });
       } else if (mode === 'reset') {
         await sendPasswordResetEmail(auth, email);
-        setMessage('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+        setMessage('Se o e-mail estiver cadastrado, enviamos um link de recuperação. Por segurança, o sistema sempre confirma o envio. Verifique também sua caixa de Spam e confirme se digitou o e-mail exato do cadastro.');
         setMode('login');
       }
     } catch (err: any) {
