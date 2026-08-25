@@ -41,23 +41,40 @@ export default function Transactions() {
   useEffect(() => {
     if (!currentUser) return;
     
-    const q = query(
-      collection(db, 'users', currentUser.uid, 'transactions'),
-      orderBy('date', 'desc')
-    );
+    let unsubscribe: (() => void) | undefined;
+    let isMounted = true;
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Transaction[];
-      setTransactions(data);
-    }, (error) => {
-      console.error("Erro no onSnapshot das transações:", error);
-      alert("Erro ao buscar transações: " + error.message);
-    });
+    const setupListener = async () => {
+      try {
+        await currentUser.getIdToken(true); // Força um token fresco antes
+        if (!isMounted) return;
 
-    return unsubscribe;
+        const q = query(
+          collection(db, 'users', currentUser.uid, 'transactions'),
+          orderBy('date', 'desc')
+        );
+
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          const data = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Transaction[];
+          setTransactions(data);
+        }, (error: any) => {
+          console.error("🔥 Firebase Firestore Erro Real (Transactions):", error.code, error.message, error);
+          alert("Erro real do Firestore: " + (error.message || error));
+        });
+      } catch (err) {
+        console.error("Erro ao forçar token em Transactions:", err);
+      }
+    };
+
+    setupListener();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, [currentUser]);
 
     const handleAddTransaction = async (e: React.FormEvent) => {

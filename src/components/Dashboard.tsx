@@ -51,24 +51,42 @@ export default function Dashboard() {
   useEffect(() => {
     if (!currentUser) return;
     
-    const q = query(
-      collection(db, 'users', currentUser.uid, 'transactions'),
-      orderBy('date', 'desc')
-    );
+    let unsubscribe: (() => void) | undefined;
+    let isMounted = true;
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Transaction[];
-      setTransactions(data);
-      setLoading(false);
-    }, (error) => {
-      console.error("Erro no onSnapshot do Dashboard:", error);
-      setLoading(false);
-    });
+    const setupListener = async () => {
+      try {
+        await currentUser.getIdToken(true); // Força um token fresco antes
+        if (!isMounted) return;
 
-    return unsubscribe;
+        const q = query(
+          collection(db, 'users', currentUser.uid, 'transactions'),
+          orderBy('date', 'desc')
+        );
+
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          const data = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Transaction[];
+          setTransactions(data);
+          setLoading(false);
+        }, (error: any) => {
+          console.error("🔥 Firebase Firestore Erro Real (Dashboard):", error.code, error.message, error);
+          setLoading(false);
+        });
+      } catch (err) {
+        console.error("Erro ao forçar token no Dashboard:", err);
+        setLoading(false);
+      }
+    };
+
+    setupListener();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, [currentUser]);
 
     const generateInsights = async () => {
