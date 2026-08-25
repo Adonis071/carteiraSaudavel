@@ -63,6 +63,9 @@ export default function Dashboard() {
       })) as Transaction[];
       setTransactions(data);
       setLoading(false);
+    }, (error) => {
+      console.error("Erro no onSnapshot do Dashboard:", error);
+      setLoading(false);
     });
 
     return unsubscribe;

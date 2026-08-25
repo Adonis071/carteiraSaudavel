@@ -27,6 +27,7 @@ export default function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const location = useLocation();
   const [isAdding, setIsAdding] = useState(location.state?.openForm || false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Form State
   const [amount, setAmount] = useState('');
@@ -51,86 +52,80 @@ export default function Transactions() {
         ...doc.data()
       })) as Transaction[];
       setTransactions(data);
+    }, (error) => {
+      console.error("Erro no onSnapshot das transações:", error);
+      alert("Erro ao buscar transações: " + error.message);
     });
 
     return unsubscribe;
   }, [currentUser]);
 
-  const handleAddTransaction = async (e: React.FormEvent) => {
+    const handleAddTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser || !amount || !name) return;
 
+    setIsSaving(true);
+    
     // Fix comma replacing and NaN issues
     const normalizedAmount = amount.replace(',', '.');
     let txAmount = parseFloat(normalizedAmount);
     if (isNaN(txAmount)) txAmount = 0;
 
-    const txName = name;
-    const txType = type;
-    const txDate = date;
-    const txSelCat = selectedCategory;
-    const txCustCat = customCategory;
+    let category = 'Outros';
+    try {
+      if (selectedCategory === 'Outro') {
+        category = customCategory || 'Outros';
+      } else if (selectedCategory !== 'Auto (IA)') {
+        category = selectedCategory;
+      } else {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    // Optimistically close modal and reset form IMMEDIATELY for a snappy UI
-    setIsAdding(false);
-    setIsClassifying(false);
-    setAmount('');
-    setName('');
-    setSelectedCategory('Auto (IA)');
-    setCustomCategory('');
-    
-    // Run the API call and Firestore save in the background
-    (async () => {
-      let category = 'Outros';
-      let aiSuccess = false;
-
-      try {
-        if (txSelCat === 'Outro') {
-          category = txCustCat || 'Outros';
-        } else if (txSelCat !== 'Auto (IA)') {
-          category = txSelCat;
-        } else {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-            const aiRes = await fetch('/api/ai/classify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ transactionName: txName, amount: txAmount }),
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-            
-            if (aiRes.ok) {
-               const aiData = await aiRes.json();
-               if (aiData.category) {
-                 category = aiData.category;
-                 aiSuccess = true;
-               }
-            }
-          } catch (error) {
-            console.error("AI Classification error", error);
-            category = 'Outros';
+          const aiRes = await fetch('/api/ai/classify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transactionName: name, amount: txAmount }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+          
+          if (aiRes.ok) {
+             const aiData = await aiRes.json();
+             if (aiData.category) {
+               category = aiData.category;
+             }
           }
+        } catch (error) {
+          console.error("AI Classification error", error);
+          category = 'Outros';
         }
-
-        await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), {
-          userId: currentUser.uid,
-          amount: txAmount,
-          name: txName,
-          type: txType,
-          date: txDate,
-          category: category,
-          createdAt: serverTimestamp(),
-          source: 'manual'
-        });
-        
-      } catch (error: any) {
-        console.error("Error adding doc in background", error);
-        alert("Erro crítico ao salvar no banco de dados:\n" + (error?.message || error) + "\n\nSe for um erro de permissão ou NOT_FOUND, verifique as regras do Firestore ou o Database ID no console.");
       }
-    })();
+
+      await addDoc(collection(db, 'users', currentUser.uid, 'transactions'), {
+        userId: currentUser.uid,
+        amount: txAmount,
+        name: name,
+        type: type,
+        date: date,
+        category: category,
+        createdAt: serverTimestamp(),
+        source: 'manual'
+      });
+      
+      // Success! Reset form and close
+      setIsAdding(false);
+      setAmount('');
+      setName('');
+      setSelectedCategory('Auto (IA)');
+      setCustomCategory('');
+      
+    } catch (error: any) {
+      console.error("Error adding doc:", error);
+      alert("❌ ERRO AO SALVAR NO BANCO DE DADOS!\n\nO Firebase bloqueou a gravação. Você precisa liberar as Regras do Firestore no console do Firebase (aba Rules).\n\nDetalhe do erro: " + (error?.message || error));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const deleteTransaction = async (id: string) => {
