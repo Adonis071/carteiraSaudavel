@@ -68,21 +68,34 @@ export default function Dashboard() {
     return unsubscribe;
   }, [currentUser]);
 
-  const generateInsights = async () => {
+    const generateInsights = async () => {
     if (transactions.length === 0) return;
     setLoadingInsights(true);
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+      
       const response = await fetch('/api/ai/insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactions: transactions.slice(0, 50) }) // Send last 50 for context
+        body: JSON.stringify({ transactions: transactions.slice(0, 50) }), // Send last 50 for context
+        signal: controller.signal
       });
-      const data = await response.json();
-      if (data.insights) {
-        setInsights(data.insights);
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.insights) {
+          setInsights(data.insights);
+        } else {
+          setInsights("Não foi possível gerar insights no momento. Tente novamente mais tarde.");
+        }
+      } else {
+        setInsights("Erro ao conectar com a IA. Verifique se a API Key do Gemini está configurada corretamente.");
       }
     } catch (error) {
       console.error("Failed to generate insights:", error);
+      setInsights("Erro de conexão ao gerar insights. Tente novamente.");
     } finally {
       setLoadingInsights(false);
     }

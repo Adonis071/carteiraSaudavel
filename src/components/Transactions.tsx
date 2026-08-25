@@ -60,18 +60,22 @@ export default function Transactions() {
     e.preventDefault();
     if (!currentUser || !amount || !name) return;
 
-    // Capture state values before resetting
-    const txAmount = parseFloat(amount);
+    // Fix comma replacing and NaN issues
+    const normalizedAmount = amount.replace(',', '.');
+    let txAmount = parseFloat(normalizedAmount);
+    if (isNaN(txAmount)) txAmount = 0;
+
     const txName = name;
     const txType = type;
     const txDate = date;
     const txSelCat = selectedCategory;
     const txCustCat = customCategory;
 
-    // Show loading state and prevent form close until done
+    // Start loading state
     setIsClassifying(true);
     
     let category = 'Outros';
+    let aiSuccess = false;
 
     try {
       if (txSelCat === 'Outro') {
@@ -80,9 +84,8 @@ export default function Transactions() {
         category = txSelCat;
       } else {
         try {
-          // Use Gemini to classify the transaction with a timeout
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 seconds timeout
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
 
           const aiRes = await fetch('/api/ai/classify', {
             method: 'POST',
@@ -92,13 +95,15 @@ export default function Transactions() {
           });
           clearTimeout(timeoutId);
           
-          const aiData = await aiRes.json();
-          if (aiData.category) {
-            category = aiData.category;
+          if (aiRes.ok) {
+             const aiData = await aiRes.json();
+             if (aiData.category) {
+               category = aiData.category;
+               aiSuccess = true;
+             }
           }
         } catch (error) {
           console.error("AI Classification error", error);
-          // Fallback if AI fails or times out
           category = 'Outros';
         }
       }
@@ -114,15 +119,18 @@ export default function Transactions() {
         source: 'manual'
       });
       
-    } catch (error) {
-      console.error("Error adding doc", error);
-    } finally {
-      setIsClassifying(false);
+      // Clear form only on success
       setIsAdding(false);
       setAmount('');
       setName('');
       setSelectedCategory('Auto (IA)');
       setCustomCategory('');
+      
+    } catch (error) {
+      console.error("Error adding doc", error);
+      alert("Houve um erro ao salvar a transação. Verifique sua conexão.");
+    } finally {
+      setIsClassifying(false);
     }
   };
 
