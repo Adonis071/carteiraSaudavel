@@ -10,6 +10,10 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { cn } from '../lib/utils';
+import BankSync from './BankSync';
+import { useNavigate } from "react-router-dom";
+import { motion } from "motion/react";
+
 
 const safeFormatDate = (dateStr: any, fmt: string) => {
   try {
@@ -31,10 +35,10 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-import BankSync from './BankSync';
 
-import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
+
+
+
 
 export default function Dashboard() {
   const { currentUser } = useAuth();

@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import Transactions from './components/Transactions';
 import Sidebar from './components/Sidebar';
 import { Menu, X } from 'lucide-react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { currentUser } = useAuth();
@@ -82,22 +83,22 @@ function AppRoutes() {
 
   if (!currentUser) {
     return (
-      <AnimatePresence>
-        <Routes location={location} key={location.pathname}>
+      
+        <Routes>
           <Route path="*" element={
             <motion.div {...pageTransition}>
               <Auth />
             </motion.div>
           } />
         </Routes>
-      </AnimatePresence>
+      
     );
   }
 
   return (
     <AppLayout>
-      <AnimatePresence>
-        <Routes location={location} key={location.pathname}>
+      
+        <Routes>
           <Route path="/" element={
             <motion.div {...pageTransition} className="w-full">
               <Dashboard />
@@ -110,7 +111,7 @@ function AppRoutes() {
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AnimatePresence>
+      
     </AppLayout>
   );
 }
@@ -120,7 +121,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <ErrorBoundary><AppRoutes /></ErrorBoundary>
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
