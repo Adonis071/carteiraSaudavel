@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, Settings, LogOut, Wallet, Shield, Share2 } from 'lucide-react';
+import { LayoutDashboard, Receipt, Settings, LogOut, Wallet, Shield, Share2, UserCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { cn } from '../lib/utils';
@@ -62,6 +62,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
     { name: 'Transações', icon: Receipt, path: '/transactions' },
+    { name: 'Minha Conta', icon: UserCircle, path: '/account' },
   ];
 
   return (

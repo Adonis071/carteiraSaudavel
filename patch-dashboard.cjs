@@ -1,65 +1,22 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/components/Dashboard.tsx', 'utf8');
+const file = 'src/components/Dashboard.tsx';
+let code = fs.readFileSync(file, 'utf8');
 
-const targetFunc = `  const generateInsights = async () => {
-    if (transactions.length === 0) return;
-    setLoadingInsights(true);
-    try {
-      const response = await fetch('/api/ai/insights', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactions: transactions.slice(0, 50) }) // Send last 50 for context
-      });
-      const data = await response.json();
-      if (data.insights) {
-        setInsights(data.insights);
-      }
-    } catch (error) {
-      console.error("Failed to generate insights:", error);
-    } finally {
-      setLoadingInsights(false);
-    }
-  };`;
+// Add import
+code = code.replace(
+  /import \{ RefreshCw, Plus, TrendingUp, TrendingDown, Wallet, Sparkles, DollarSign, Calendar, ChevronRight \} from 'lucide-react';/,
+  "import { RefreshCw, Plus, TrendingUp, TrendingDown, Wallet, Sparkles, DollarSign, Calendar, ChevronRight } from 'lucide-react';\nimport Markdown from 'react-markdown';"
+);
 
-const newFunc = `  const generateInsights = async () => {
-    if (transactions.length === 0) return;
-    setLoadingInsights(true);
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
-      
-      const response = await fetch('/api/ai/insights', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transactions: transactions.slice(0, 50) }), // Send last 50 for context
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.insights) {
-          setInsights(data.insights);
-        } else {
-          setInsights("Não foi possível gerar insights no momento. Tente novamente mais tarde.");
-        }
-      } else {
-        setInsights("Erro ao conectar com a IA. Verifique se a API Key do Gemini está configurada corretamente.");
-      }
-    } catch (error) {
-      console.error("Failed to generate insights:", error);
-      setInsights("Erro de conexão ao gerar insights. Tente novamente.");
-    } finally {
-      setLoadingInsights(false);
-    }
-  };`;
+// Replace rendering
+const oldRender = `<div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                {insights}
+              </div>`;
+const newRender = `<div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed markdown-body">
+                <Markdown>{insights}</Markdown>
+              </div>`;
 
-if (code.includes('const generateInsights = async () => {')) {
-    // Just regex replace the function
-    const pattern = /const generateInsights = async \(\) => \{[\s\S]*?\n  \};\n/m;
-    code = code.replace(pattern, newFunc + '\n');
-    fs.writeFileSync('src/components/Dashboard.tsx', code);
-    console.log('Patched generateInsights in Dashboard.tsx');
-} else {
-    console.log('Could not find generateInsights.');
-}
+code = code.replace(oldRender, newRender);
+
+fs.writeFileSync(file, code);
+console.log("Patched Dashboard.tsx");

@@ -30,7 +30,11 @@ export default function BankSync({ className }: BankSyncProps) {
         if (data.link_token) {
           setLinkToken(data.link_token);
         } else if (data.error) {
-          console.error("Plaid API Error:", data.error);
+          if (data.error && data.error.includes && data.error.includes('credentials missing')) {
+            console.warn("Plaid não configurado. Se quiser sincronizar bancos, adicione PLAID_CLIENT_ID e PLAID_SECRET.");
+          } else {
+            console.error("Plaid API Error:", data.error);
+          }
         }
       } catch (err) {
         console.error("Error generating Plaid link token", err);

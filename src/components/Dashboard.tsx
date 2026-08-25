@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Transaction } from '../types';
+import Markdown from 'react-markdown';
 import { ArrowUpCircle, ArrowDownCircle, DollarSign, Download, Sparkles, Plus, Landmark, RefreshCw, X, Info } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -94,7 +95,7 @@ export default function Dashboard() {
     setLoadingInsights(true);
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 15 seconds timeout
       
       const response = await fetch('/api/ai/insights', {
         method: 'POST',
@@ -340,8 +341,8 @@ export default function Dashboard() {
           
           <div className="relative z-10 flex-1 flex flex-col">
             {insights ? (
-              <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                {insights}
+              <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed markdown-body">
+                <Markdown>{insights}</Markdown>
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-4">

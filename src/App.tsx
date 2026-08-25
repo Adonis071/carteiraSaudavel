@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import Transactions from './components/Transactions';
+import MyAccount from './components/MyAccount';
 import Sidebar from './components/Sidebar';
 import { Menu, X } from 'lucide-react';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -107,6 +108,11 @@ function AppRoutes() {
           <Route path="/transactions" element={
             <motion.div {...pageTransition} className="w-full">
               <Transactions />
+            </motion.div>
+          } />
+          <Route path="/account" element={
+            <motion.div {...pageTransition} className="w-full">
+              <MyAccount />
             </motion.div>
           } />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,9 +1,24 @@
 const fs = require('fs');
-let code = fs.readFileSync('src/App.tsx', 'utf8');
+const file = 'src/App.tsx';
+let code = fs.readFileSync(file, 'utf8');
 
-// Some framer motion versions have a bug with mode="wait" and React Router. 
-// Let's remove mode="wait" just to be extremely safe against white screens on navigation.
-code = code.replace(/<AnimatePresence mode="wait">/g, '<AnimatePresence>');
+code = code.replace(
+  /import Transactions from '.\/components\/Transactions';/g,
+  "import Transactions from './components/Transactions';\nimport MyAccount from './components/MyAccount';"
+);
 
-fs.writeFileSync('src/App.tsx', code);
-console.log('Patched App.tsx');
+code = code.replace(
+  /<Route path="\/transactions" element=\{[\s\S]*?\} \/>/g,
+  `<Route path="/transactions" element={
+            <motion.div {...pageTransition} className="w-full">
+              <Transactions />
+            </motion.div>
+          } />
+          <Route path="/account" element={
+            <motion.div {...pageTransition} className="w-full">
+              <MyAccount />
+            </motion.div>
+          } />`
+);
+
+fs.writeFileSync(file, code);

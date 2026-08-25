@@ -97,7 +97,7 @@ export default function Transactions() {
       } else {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
 
           const aiRes = await fetch('/api/ai/classify', {
             method: 'POST',
