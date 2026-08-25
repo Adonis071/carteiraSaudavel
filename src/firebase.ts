@@ -19,4 +19,4 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize Firestore
-export const db = getFirestore(app);
+export const db = firebaseConfig.firestoreDatabaseId ? getFirestore(app, firebaseConfig.firestoreDatabaseId) : getFirestore(app);

@@ -126,8 +126,9 @@ export default function Transactions() {
           source: 'manual'
         });
         
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error adding doc in background", error);
+        alert("Erro crítico ao salvar no banco de dados:\n" + (error?.message || error) + "\n\nSe for um erro de permissão ou NOT_FOUND, verifique as regras do Firestore ou o Database ID no console.");
       }
     })();
   };
