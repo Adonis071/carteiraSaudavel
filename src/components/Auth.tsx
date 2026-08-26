@@ -43,6 +43,8 @@ export default function Auth() {
     try {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
+        setEmail('');
+        setPassword('');
       } else if (mode === 'register') {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (name) {
@@ -55,6 +57,8 @@ export default function Auth() {
           phone,
           createdAt: new Date().toISOString()
         });
+        setEmail('');
+        setPassword('');
       } else if (mode === 'reset') {
         await sendPasswordResetEmail(auth, email);
         setMessage('Se o e-mail estiver cadastrado, enviamos um link de recuperação. Por segurança, o sistema sempre confirma o envio. Verifique também sua caixa de Spam e confirme se digitou o e-mail exato do cadastro.');
@@ -180,6 +184,7 @@ export default function Auth() {
                   id="email"
                   name="email"
                   type="email"
+                  autoComplete="new-password"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -202,6 +207,7 @@ export default function Auth() {
                     id="password"
                     name="password"
                     type="password"
+                    autoComplete="new-password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

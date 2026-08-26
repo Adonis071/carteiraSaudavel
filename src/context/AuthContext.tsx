@@ -16,7 +16,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let inactivityTimer: NodeJS.Timeout;
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      // Auto logout after 15 minutes of inactivity (900000 ms)
+      inactivityTimer = setTimeout(() => {
+        if (auth.currentUser) {
+          signOut(auth);
+        }
+      }, 900000);
+    };
+
+    const handleActivity = () => {
+      if (auth.currentUser) {
+        resetTimer();
+      }
+    };
+
+    // Listeners for activity
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+    window.addEventListener('click', handleActivity);
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        resetTimer();
+      } else {
+        clearTimeout(inactivityTimer);
+      }
+
       if (user) {
         console.log("🔥 [DIAGNÓSTICO] UID do usuário atual:", user.uid);
       } else {
@@ -25,7 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCurrentUser(user);
       setLoading(false);
     });
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      clearTimeout(inactivityTimer);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('click', handleActivity);
+    };
   }, []);
 
   const loginWithGoogle = async () => {
